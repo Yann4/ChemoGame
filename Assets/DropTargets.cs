@@ -3,34 +3,95 @@ using System.Collections;
 
 public class DropTargets : MonoBehaviour 
 {
-	public float leftLaneXPos;
-	public float middleLaneXPos;
-	public float rightLaneXPos;
+	//Spatial data
+	public GameObject leftLane, rightLane, middleLane;
+	private float llXPos;
+	private float mlXPos;
+	private float rlXPos;
 
-	public float topOfLane;
+	private float topOfLane = 5.0f;
 
-	private enum TargetType{ARROW,};
-
+	//"Difficulty" values
 	private double lastDrop;
-	public double dropRate = 1.0;
+	//Values in seconds
+	public double slowestDropRate = 1.0; //Longest time possible to go without drop
+	public double fastestDropRate = 0.2; //Shortest time possible to have 2 drops happen consecutively
+	public uint chanceToDrop = 50; //As percentage, chance for a drop to happen after $fastestDropRate time has elapsed
 
-	private GameObject arrow;
+	private enum TargetType{ARROW_GOOD, ARROW_BAD};
+	private GameObject arrowGood, arrowBad;
 
 	// Use this for initialization
 	void Start ()
 	{
+		//Cap to 100%
+		if(chanceToDrop > 100)
+		{
+			chanceToDrop = 100;
+		}
+
+		llXPos = leftLane.transform.position.x;
+		mlXPos = middleLane.transform.position.x;
+		rlXPos = rightLane.transform.position.x;
+
 		lastDrop = Time.time;
 
-		arrow = Resources.Load ("Target") as GameObject;
+		loadDrops ();
+	}
+
+	void loadDrops()
+	{
+		arrowGood = Resources.Load ("Target") as GameObject;
+		arrowBad = Resources.Load ("ArrowUp") as GameObject;
 	}
 	
 	// Update is called once per frame
 	void Update () 
 	{
-		if(Time.time - lastDrop > dropRate)
+		
+
+		if(shouldDrop())
 		{
-			DropInLane (arrow, Random.Range (0, 3));
+			DropInLane (getTargetToDrop(), selectLane());
 		}
+	}
+
+	bool shouldDrop()
+	{
+		double currentTime = Time.time;
+		double timeSinceLastDrop = currentTime - lastDrop;
+
+		if(timeSinceLastDrop > fastestDropRate)
+		{
+			if(Random.Range(0, 100) < chanceToDrop)
+			{
+				return true;
+			}
+		}
+
+		if(timeSinceLastDrop > slowestDropRate)
+		{
+			return true;
+		}
+
+		return false;
+	}
+
+	//Todo: add logic to make it fun
+	GameObject getTargetToDrop()
+	{
+		if(Random.Range(0, 100) > 50)
+		{
+			return arrowBad;
+		}
+
+		return arrowGood;
+	}
+
+	//Todo: add logic to make it fun
+	int selectLane()
+	{
+		return Random.Range (0, 3);
 	}
 
 	//lane int, 0 - left, 1 - middle, 2 - right. Any other value defaults to right
@@ -40,13 +101,13 @@ public class DropTargets : MonoBehaviour
 
 		if (lane == 0) 
 		{
-			pos.x = leftLaneXPos;
+			pos.x = llXPos;
 		}else if(lane == 1)
 		{
-			pos.x = middleLaneXPos;
+			pos.x = mlXPos;
 		}else
 		{
-			pos.x = rightLaneXPos;
+			pos.x = rlXPos;
 		}
 
 		Instantiate (target, pos, Quaternion.identity);

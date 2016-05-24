@@ -4,10 +4,13 @@ using System.Collections;
 public class TargetUpdate : MonoBehaviour 
 {
 	private float speed = 0.1f;
+	public bool good = true;
+	private GameObject background;
 
 	// Use this for initialization
-	void Start () 
+	void Start ()
 	{
+		background = GameObject.FindGameObjectWithTag ("GameController");
 	}
 	
 	// Update is called once per frame
@@ -18,6 +21,18 @@ public class TargetUpdate : MonoBehaviour
 		pos.y -= speed;
 
 		transform.position = pos;
+	}
+
+	public void clicked()
+	{
+		Score score = background.GetComponent<Score> ();
+
+		if(good)
+		{
+			score.incrementGood ();
+		}else{
+			score.incrementBad ();
+		}
 	}
 
 	void OnBecameInvisible()

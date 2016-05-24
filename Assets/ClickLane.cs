@@ -32,6 +32,8 @@ public class ClickLane : MonoBehaviour {
 	{
 		if(laneSelected)
 		{
+			TargetUpdate tu = collider.gameObject.GetComponent<TargetUpdate> ();
+			tu.clicked ();
 			Destroy (collider.gameObject);
 		}
 	}
